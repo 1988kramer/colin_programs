@@ -1,0 +1,60 @@
+// SerialBot.h
+// by Andrew Kramer
+// 11/28/2016
+
+// issues commands to and receives sensor and odometry information from
+// a robot controller using UART communication
+
+#ifndef SerialBot_h
+#define SerialBot_h
+
+#include <stdio.h>
+#include <cstdlib>
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <string.h>
+#include <pthread.h>
+
+const char DEL = ',';
+const char SOP = '<';
+const char EOP = '>';
+
+class SerialBot
+{
+public:
+	SerialBot(int* x, int* y, double* theta, int* distances);
+	int init(); // starts communication with the robot controller
+	void setSpeed(int translational, double angular); 
+private:
+	int* x_, y_; // robot's x and y coordinates
+	double* theta_; // robot's heading in radians
+	int translational_; // commanded translational speed in cm/s
+	double angular_; // commanded angular velocity in rad/s
+	int* distances_; // array of distance readings from sonar sensors
+	pthread_t commThread_;
+	int serialFd_; // file descriptor for serial connection
+	int readPeriod_; // delay between updates in microseconds
+	int inPacketSize_; // default size for sensor update packet
+	int numSensors_; // number of values in the sensor packets
+	
+	void openSerial(); // opens serial connection with robot controller
+	int transmit(char* commandPacket); // transmits command packet to robot 
+	                                   //controller
+	int receive(char* inPacket, int packetSize); // receives sensor update packet
+																							 // from robot controller
+	char* makeCommandPacket(); // builds a command packet from the commanded speeds
+	int parseSensorPacket(char* sensorPacket, int packetSize); // parses a packet of sensor
+																														 // updates from the robot	
+	void commThreadFunction();																											 
+};
+
+// global function: breaks encapsulation
+// possibly should just create the new thread in the client code
+void* threadProxyFunction(void *args)
+{
+	commThreadFunction();
+}
+
+#endif
