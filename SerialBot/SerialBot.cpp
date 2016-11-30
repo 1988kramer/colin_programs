@@ -16,19 +16,19 @@
 
 #include "SerialBot.h"
 
-SerialBot::SerialBot(int* x, int* y, double* theta, int* distances)
+SerialBot::SerialBot()
 {
 	// initialize member variables
-	x_ = x;
-	y_ = y;
-	theta_ = theta;
-	distances_ = distances;
+	x_ = 0;
+	y_ = 0;
+	theta_ = 0.0;
 	translational_ = 0;
 	angular_ = 0.0;
 	serialFd_ = -1;
 	inPacketSize_ = 100;
 	readPeriod_ = 10000;
 	numSensors_ = 11;
+	distances_ = new int[numSensors - 3];
 	
 	openSerial();
 }
@@ -36,6 +36,19 @@ SerialBot::SerialBot(int* x, int* y, double* theta, int* distances)
 int SerialBot::init()
 {
 	return pthread_create(&commThread_, NULL, threadProxyFunction, null);
+}
+
+void SerialBot::getDistances(int *distances)
+{
+	for (int i = 0; i < numSensors - 3; i++)
+		distances[i] = distances_[i];
+}
+
+void SerialBot::getPose(int *x, int *y, double *theta)
+{
+	*x = x_;
+	*y = y_;
+	*theta = theta_;
 }
 
 void SerialBot::setSpeed(int translational, double angular)
