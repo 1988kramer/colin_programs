@@ -24,12 +24,14 @@ const char EOP = '>';
 class SerialBot
 {
 public:
-	SerialBot(int* x, int* y, double* theta, int* distances);
+	SerialBot();
 	int init(); // starts communication with the robot controller
 	void setSpeed(int translational, double angular); 
+	void getDistances(int* distances); // copies values in distances_ to distances
+	void getPose(int* x, int* y, double* theta); // copies values in x_, y_, and theta_ to x, y, and theta
 private:
-	int* x_, y_; // robot's x and y coordinates
-	double* theta_; // robot's heading in radians
+	int x_, y_; // robot's x and y coordinates
+	double theta_; // robot's heading in radians
 	int translational_; // commanded translational speed in cm/s
 	double angular_; // commanded angular velocity in rad/s
 	int* distances_; // array of distance readings from sonar sensors
