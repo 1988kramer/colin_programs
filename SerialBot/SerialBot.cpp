@@ -28,19 +28,19 @@ SerialBot::SerialBot()
 	inPacketSize_ = 100;
 	readPeriod_ = 10000;
 	numSensors_ = 11;
-	distances_ = new int[numSensors - 3];
+	distances_ = new int[numSensors_ - 3];
 	
 	openSerial();
 }
 
-int SerialBot::init()
+SerialBot::~SerialBot()
 {
-	return pthread_create(&commThread_, NULL, threadProxyFunction, null);
+	delete[] distances_;
 }
 
 void SerialBot::getDistances(int *distances)
 {
-	for (int i = 0; i < numSensors - 3; i++)
+	for (int i = 0; i < numSensors_ - 3; i++)
 		distances[i] = distances_[i];
 }
 
@@ -62,7 +62,7 @@ void SerialBot::openSerial()
 {
 	serialFd_ = open("/dev/serial0", O_RDWR); // left out O_NOCTTY and O_NDELAY
 																						// to allow blocking read
-	if (serial == -1)
+	if (serialFd_ == -1)
 	{
 		cerr << "Error - unable to open uart" << endl;
 		exit(-1);
@@ -90,12 +90,12 @@ int SerialBot::transmit(char* commandPacket)
 }
 
 // receives sensor update packet from the robot controller
-int SerialBot::receive(char* inPacket, int packetSize)
+int SerialBot::receive(char* inPacket)
 {
+	int rxBytes;
 	if (serialFd_ != -1)
 	{
 
-		int rxBytes;
 		int packetIndex = 0; // current index in inPacket
 		bool started = false; // start-of-packet character has been encountered
 		bool ended = false; // end-of-packet character has been encountered
@@ -122,32 +122,30 @@ int SerialBot::receive(char* inPacket, int packetSize)
 		}
 		else
 		{
-			rxBytes = read(serialFd_, inPacket, packetSize);
+			rxBytes = read(serialFd_, inPacket, inPacketSize_);
 		}
 	}
 	return rxBytes;
 }
 
 // builds a command packet from the commanded speeds
-char* SerialBot::makeCommandPacket()
+void SerialBot::makeCommandPacket(char* commandPacket)
 {
-	char commandPacket[32];
 	memset(commandPacket, '\0', 32);
 	strncat(commandPacket, &SOP, 1);
 	char buffer[10];
 	memset(buffer, '\0', 10);
-	itoa(buffer, translational_, 10);
+	sprintf(buffer, "%d", translational_);
 	strcat(commandPacket, (const char*)buffer);
 	strncat(commandPacket, &DEL, 1);
 	memset(buffer, '\0', 10);
-	itoa(buffer, (int)(angular_ * 1000.0), 10);
+	sprintf(buffer, "%d", (int)(angular_ * 1000.0));
 	strcat(commandPacket, (const char*)buffer);
-	strncat(commandPacket, &EOP);
-	return commandPacket;
+	strncat(commandPacket, &EOP, 1);
 }
 
 // parses a packet of sensor updates from the robot's controller
-int SerialBot::parseSensorPacket(char* sensorPacket, int packetSize)
+int SerialBot::parseSensorPacket(char* inPacket)
 {
 	bool started = false; // start-of-packet character has been encountered
 	bool ended = false; // end-of-packet character has been encountered
@@ -159,14 +157,14 @@ int SerialBot::parseSensorPacket(char* sensorPacket, int packetSize)
 	int valueIndex = 0; // current index for the inValues
 	
 	// advance until start-of-packet character is found
-	while (!started && inPacket[inPacketIndex] < packetSize)
+	while (!started && inPacket[inPacketIndex] < inPacketSize_)
 	{
 		if (inPacket[inPacketIndex] == SOP)
 			started = true;
 		inPacketIndex++;
 	}
 	// parse packet until end-of-packet character is found
-	while (!ended && inPacket[inPacketIndex] < packetSize
+	while (!ended && inPacket[inPacketIndex] < inPacketSize_
 					&& valueIndex < numSensors_)
 	{
 		if (inPacket[inPacketIndex] = DEL)
@@ -191,12 +189,12 @@ int SerialBot::parseSensorPacket(char* sensorPacket, int packetSize)
 	{
 		// update sonar distances
 		for (int i = 0; i < numSensors_ - 3; i++) 
-			distances[i] = inValues[i];
+			distances_[i] = inValues[i];
 		
 		// update pose from odometry
-		x_ = inValues[numSensors - 3];
-		y_ = inValues[numSensors - 2];
-		theta_ = ((double)inValues[numSensors - 1]) / 1000.0;
+		x_ = inValues[numSensors_ - 3];
+		y_ = inValues[numSensors_ - 2];
+		theta_ = ((double)inValues[numSensors_ - 1]) / 1000.0;
 		return 1;
 	}
 	else if (!started)
@@ -216,14 +214,15 @@ void SerialBot::commThreadFunction()
 {
 	while (true) 
 	{
-		char* commandPacket = makeCommandPacket();
+		char commandPacket[32];
+		makeCommandPacket(commandPacket);
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
-		char* inPacket[inPacketSize];
-		memset(inPacket, '\0', inPacketSize);
-		if(receive(inPacket, inPacketSize) < 1)
+		char inPacket[inPacketSize_];
+		memset(inPacket, '\0', inPacketSize_);
+		if(receive(inPacket) < 1)
 			cerr << "sensor packet not received" << endl;
-		parseSensorPacket(inPacket, inPacketSize);
-		usleep(readPeriod);
+		parseSensorPacket(inPacket);
+		usleep(readPeriod_);
 	}
 }
