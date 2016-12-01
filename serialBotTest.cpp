@@ -57,4 +57,10 @@ void getPose()
 int main()
 {
 	pthread_create(&commThread, NULL, threadFunction, NULL);
+	while (true)
+	{
+		enterSpeed();
+		getDistances();
+		getPose();
+	}
 }
