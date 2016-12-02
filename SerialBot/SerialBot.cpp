@@ -164,13 +164,13 @@ int SerialBot::parseSensorPacket(char* inPacket)
 		inPacketIndex++;
 	}
 	// parse packet until end-of-packet character is found
-	while (!ended && inPacket[inPacketIndex] < inPacketSize_
+	while (!ended && inPacketIndex < inPacketSize_
 					&& valueIndex < numSensors_)
 	{
 		if (inPacket[inPacketIndex] = DEL)
 		{
 			bufferIndex = 0;
-			inValues[valueIndex] = atof(buffer);
+			inValues[valueIndex] = atoi(buffer);
 			valueIndex++;
 		}
 		else if (inPacket[inPacketIndex] == EOP)
