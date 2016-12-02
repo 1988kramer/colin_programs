@@ -150,14 +150,15 @@ int SerialBot::parseSensorPacket(char* inPacket)
 	bool started = false; // start-of-packet character has been encountered
 	bool ended = false; // end-of-packet character has been encountered
 	int inPacketIndex = 0; // current index in inPacket
-	char buffer[10];
-	memset(buffer, '\0', 10);
+	int bufSize = 10;
+	char buffer[bufSize];
+	memset(buffer, '\0', bufSize);
 	int bufferIndex = 0; // current index in the buffer
 	int inValues[numSensors_];
 	int valueIndex = 0; // current index for the inValues
 	
 	// advance until start-of-packet character is found
-	while (!started && inPacket[inPacketIndex] < inPacketSize_)
+	while (!started && inPacketIndex < inPacketSize_)
 	{
 		if (inPacket[inPacketIndex] == SOP)
 			started = true;
@@ -167,10 +168,11 @@ int SerialBot::parseSensorPacket(char* inPacket)
 	while (!ended && inPacketIndex < inPacketSize_
 					&& valueIndex < numSensors_)
 	{
-		if (inPacket[inPacketIndex] = DEL)
+		if (inPacket[inPacketIndex] == DEL)
 		{
 			bufferIndex = 0;
 			inValues[valueIndex] = atoi(buffer);
+			memset(buffer, '\0', bufSize);
 			valueIndex++;
 		}
 		else if (inPacket[inPacketIndex] == EOP)
