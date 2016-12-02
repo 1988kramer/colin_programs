@@ -26,7 +26,7 @@ SerialBot::SerialBot()
 	angular_ = 0.0;
 	serialFd_ = -1;
 	inPacketSize_ = 100;
-	readPeriod_ = 10000;
+	readPeriod_ = 1000000;
 	numSensors_ = 11;
 	distances_ = new int[numSensors_ - 3];
 	
@@ -222,6 +222,7 @@ void SerialBot::commThreadFunction()
 		char inPacket[inPacketSize_];
 		memset(inPacket, '\0', inPacketSize_);
 		int receiveResult = receive(inPacket);
+		cout << inPacket << endl;
 		if(receiveResult < 1)
 			cerr << "sensor packet not received" << endl;
 		else
