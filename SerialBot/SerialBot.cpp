@@ -216,13 +216,16 @@ void SerialBot::commThreadFunction()
 	{
 		char commandPacket[32];
 		makeCommandPacket(commandPacket);
+		cout << commandPacket << endl;
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
 		char inPacket[inPacketSize_];
 		memset(inPacket, '\0', inPacketSize_);
-		if(receive(inPacket) < 1)
+		int receiveResult = receive(inPacket);
+		if(receiveResult < 1)
 			cerr << "sensor packet not received" << endl;
-		parseSensorPacket(inPacket);
+		else
+			parseSensorPacket(inPacket);
 		usleep(readPeriod_);
 	}
 }
