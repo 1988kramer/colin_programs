@@ -92,6 +92,7 @@ int SerialBot::transmit(char* commandPacket)
 // receives sensor update packet from the robot controller
 int SerialBot::receive(char* inPacket)
 {
+	memset(inPacket, '\0', inPacketSize_);
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
@@ -218,17 +219,19 @@ void SerialBot::commThreadFunction()
 	{
 		char commandPacket[32];
 		makeCommandPacket(commandPacket);
-		cout << commandPacket << endl;
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
 		char inPacket[inPacketSize_];
-		memset(inPacket, '\0', inPacketSize_);
 		int receiveResult = receive(inPacket);
-		cout << inPacket << endl;
 		if(receiveResult < 1)
+		{
 			cerr << "sensor packet not received" << endl;
+		}
 		else
+		{
+			cout << inPacket << endl;
 			parseSensorPacket(inPacket);
+		}
 		usleep(readPeriod_);
 	}
 }
