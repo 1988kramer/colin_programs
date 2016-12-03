@@ -229,6 +229,7 @@ void SerialBot::commThreadFunction()
 		}
 		else
 		{
+			//cout << inPacket << endl;
 			parseSensorPacket(inPacket);
 		}
 		usleep(readPeriod_);
