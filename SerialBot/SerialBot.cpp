@@ -26,7 +26,7 @@ SerialBot::SerialBot()
 	angular_ = 0.0;
 	serialFd_ = -1;
 	inPacketSize_ = 100;
-	readPeriod_ = 1000000;
+	readPeriod_ = 250000;
 	numSensors_ = 11;
 	distances_ = new int[numSensors_ - 3];
 	
