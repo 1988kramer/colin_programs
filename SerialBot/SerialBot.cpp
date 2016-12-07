@@ -25,10 +25,10 @@ SerialBot::SerialBot()
 	translational_ = 0;
 	angular_ = 0.0;
 	serialFd_ = -1;
-	inPacketSize_ = 100;
+	inPacketSize_ = 22;
 	readPeriod_ = 250000;
 	numSensors_ = 11;
-	distances_ = new int[numSensors_ - 3];
+	distances_ = new int16_t[numSensors_ - 3];
 	commandPacketLength_ = 4;
 	
 	openSerial();
@@ -91,17 +91,12 @@ int SerialBot::transmit(char* commandPacket)
 }
 
 // receives sensor update packet from the robot controller
-int SerialBot::receive(char* inPacket)
+int SerialBot::receive(byte* inPacket)
 {
 	memset(inPacket, '\0', inPacketSize_);
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
-
-		int packetIndex = 0; // current index in inPacket
-		bool started = false; // start-of-packet character has been encountered
-		bool ended = false; // end-of-packet character has been encountered
-		
 		// set up blocking read with timeout at .25 seconds
 		fd_set set;
 		FD_ZERO(&set); // clear the file descriptor set
@@ -141,70 +136,31 @@ void SerialBot::makeCommandPacket(byte* commandPacket)
 }
 
 // parses a packet of sensor updates from the robot's controller
-int SerialBot::parseSensorPacket(char* inPacket)
+int SerialBot::parseSensorPacket(byte* inPacket)
 {
-	bool started = false; // start-of-packet character has been encountered
-	bool ended = false; // end-of-packet character has been encountered
-	int inPacketIndex = 0; // current index in inPacket
-	int bufSize = 10;
-	char buffer[bufSize];
-	memset(buffer, '\0', bufSize);
-	int bufferIndex = 0; // current index in the buffer
-	int inValues[numSensors_];
-	int valueIndex = 0; // current index for the inValues
-	
-	// advance until start-of-packet character is found
-	while (!started && inPacketIndex < inPacketSize_)
+	byte firstByte;
+	byte secondByte;
+	for (int i = 0; i < numSensors_ - 3; i++)
 	{
-		if (inPacket[inPacketIndex] == SOP)
-			started = true;
-		inPacketIndex++;
+		firstByte = inPacket[2 * i];
+		secondByte = inPacket[(2 * i) + 1];
+		inValues[i] = (secondByte << 8) | firstByte;
 	}
-	// parse packet until end-of-packet character is found
-	while (!ended && inPacketIndex < inPacketSize_
-					&& valueIndex < numSensors_)
-	{
-		if (inPacket[inPacketIndex] == DEL)
-		{
-			bufferIndex = 0;
-			inValues[valueIndex] = atoi(buffer);
-			memset(buffer, '\0', bufSize);
-			valueIndex++;
-		}
-		else if (inPacket[inPacketIndex] == EOP)
-		{
-			ended = true;
-			inValues[valueIndex] = atoi(buffer);
-		}
-		else
-		{
-			buffer[bufferIndex] = inPacket[inPacketIndex];
-			bufferIndex++;
-		}
-		inPacketIndex++;
-	}
-	if (started && ended)
-	{
-		// update sonar distances
-		for (int i = 0; i < numSensors_ - 3; i++) 
-			distances_[i] = inValues[i];
-		
-		// update pose from odometry
-		x_ = inValues[numSensors_ - 3];
-		y_ = inValues[numSensors_ - 2];
-		theta_ = ((double)inValues[numSensors_ - 1]) / 1000.0;
-		return 1;
-	}
-	else if (!started)
-	{
-		cerr << "Bad packet: start-of-packet character not found" << endl;
-		return -1;
-	}
-	else
-	{
-		cerr << "Bad packet: end-of-packet character not found" << endl;
-		return -1;
-	}
+
+	firstByte = inPacket[16];
+	secondByte = inPacket[17];
+
+	x_ = (secondByte << 8) | firstByte;
+
+	firstByte = inPacket[18];
+	secondByte = inPacket[19];
+
+	y_ = (secondByte << 8) | firstByte;
+
+	firstByte = inPacket[20];
+	secondByte = inPacket[21];
+
+	theta_ = ((double)(secondByte << 8) | firstByte) / 1000.0;
 }
 
 // handles communication with the robot

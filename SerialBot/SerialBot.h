@@ -38,7 +38,7 @@ private:
 	double theta_; // robot's heading in radians
 	int16_t translational_; // commanded translational speed in cm/s
 	double angular_; // commanded angular velocity in rad/s
-	int* distances_; // array of distance readings from sonar sensors
+	int16_t* distances_; // array of distance readings from sonar sensors
 	pthread_t commThread_;
 	int serialFd_; // file descriptor for serial connection
 	int readPeriod_; // delay between updates in microseconds
@@ -47,12 +47,12 @@ private:
 	int commandPacketSize_;
 	
 	void openSerial(); // opens serial connection with robot controller
-	int transmit(char* commandPacket); // transmits command packet to robot 
+	int transmit(byte* commandPacket); // transmits command packet to robot 
 	                                   //controller
-	int receive(char* inPacket); // receives sensor update packet
+	int receive(byte* inPacket); // receives sensor update packet
 												// from robot controller
-	void makeCommandPacket(char* commandPacket); // builds a command packet from the commanded speeds
-	int parseSensorPacket(char* sensorPacket); // parses a packet of sensor
+	void makeCommandPacket(byte* commandPacket); // builds a command packet from the commanded speeds
+	int parseSensorPacket(byte* sensorPacket); // parses a packet of sensor
 																// updates from the robot																											 
 };
 
