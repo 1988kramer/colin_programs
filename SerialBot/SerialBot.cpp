@@ -29,6 +29,7 @@ SerialBot::SerialBot()
 	readPeriod_ = 250000;
 	numSensors_ = 11;
 	distances_ = new int[numSensors_ - 3];
+	commandPacketLength_ = 4;
 	
 	openSerial();
 }
@@ -84,7 +85,7 @@ int SerialBot::transmit(char* commandPacket)
 	int result = -1;
 	if (serialFd_ != -1) 
 	{
-		result = write(serialFd_, commandPacket, strlen(commandPacket));
+		result = write(serialFd_, commandPacket, commandPacketLength_);
 	}
 	return result;
 }
@@ -130,19 +131,13 @@ int SerialBot::receive(char* inPacket)
 }
 
 // builds a command packet from the commanded speeds
-void SerialBot::makeCommandPacket(char* commandPacket)
+void SerialBot::makeCommandPacket(byte* commandPacket)
 {
-	memset(commandPacket, '\0', 32);
-	strncat(commandPacket, &SOP, 1);
-	char buffer[10];
-	memset(buffer, '\0', 10);
-	sprintf(buffer, "%d", translational_);
-	strcat(commandPacket, (const char*)buffer);
-	strncat(commandPacket, &DEL, 1);
-	memset(buffer, '\0', 10);
-	sprintf(buffer, "%d", (int)(angular_ * 1000.0));
-	strcat(commandPacket, (const char*)buffer);
-	strncat(commandPacket, &EOP, 1);
+	int16_t intAngular = (int)(angular * 1000.0);
+	commandPacket[0] = (byte)(translational_ & 0xFF);
+	commandPacket[1] = (byte)((translational_ >> 8) & 0xFF);
+	commandPacket[2] = (byte)(intAngular & 0xFF);
+	commandPacket[3] = (byte)((intAngular >> 8) & 0xFF);
 }
 
 // parses a packet of sensor updates from the robot's controller
@@ -217,7 +212,7 @@ void SerialBot::commThreadFunction()
 {
 	while (true) 
 	{
-		char commandPacket[32];
+		byte commandPacket[commandPacketLength_];
 		makeCommandPacket(commandPacket);
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;

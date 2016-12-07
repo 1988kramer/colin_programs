@@ -36,7 +36,7 @@ public:
 private:
 	int x_, y_; // robot's x and y coordinates
 	double theta_; // robot's heading in radians
-	int translational_; // commanded translational speed in cm/s
+	int16_t translational_; // commanded translational speed in cm/s
 	double angular_; // commanded angular velocity in rad/s
 	int* distances_; // array of distance readings from sonar sensors
 	pthread_t commThread_;
@@ -44,6 +44,7 @@ private:
 	int readPeriod_; // delay between updates in microseconds
 	int inPacketSize_; // default size for sensor update packet
 	int numSensors_; // number of values in the sensor packets
+	int commandPacketSize_;
 	
 	void openSerial(); // opens serial connection with robot controller
 	int transmit(char* commandPacket); // transmits command packet to robot 
