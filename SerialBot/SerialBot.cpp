@@ -138,8 +138,8 @@ void SerialBot::makeCommandPacket(char* commandPacket)
 // parses a packet of sensor updates from the robot's controller
 int SerialBot::parseSensorPacket(char* inPacket)
 {
-	char firstByte;
-	char secondByte;
+	int16_t firstByte;
+	int16_t secondByte;
 	int16_t inValues[numSensors_ * 2];
 	for (int i = 0; i < numSensors_ - 3; i++)
 	{
