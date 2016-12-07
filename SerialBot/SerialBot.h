@@ -47,12 +47,12 @@ private:
 	int commandPacketSize_;
 	
 	void openSerial(); // opens serial connection with robot controller
-	int transmit(byte* commandPacket); // transmits command packet to robot 
+	int transmit(char* commandPacket); // transmits command packet to robot 
 	                                   //controller
-	int receive(byte* inPacket); // receives sensor update packet
+	int receive(char* inPacket); // receives sensor update packet
 												// from robot controller
-	void makeCommandPacket(byte* commandPacket); // builds a command packet from the commanded speeds
-	int parseSensorPacket(byte* sensorPacket); // parses a packet of sensor
+	void makeCommandPacket(char* commandPacket); // builds a command packet from the commanded speeds
+	int parseSensorPacket(char* sensorPacket); // parses a packet of sensor
 																// updates from the robot																											 
 };
 
