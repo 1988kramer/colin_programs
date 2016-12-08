@@ -140,28 +140,22 @@ int SerialBot::parseSensorPacket(char* inPacket)
 {
 	int16_t firstByte;
 	int16_t secondByte;
-	int16_t inValues[numSensors_ * 2];
-	for (int i = 0; i < numSensors_ - 3; i++)
+	int16_t inValues[numSensors_];
+	for (int i = 0; i < numSensors_; i++)
 	{
 		firstByte = inPacket[2 * i];
 		secondByte = inPacket[(2 * i) + 1];
 		inValues[i] = (secondByte << 8) | firstByte;
 	}
 
-	firstByte = inPacket[16];
-	secondByte = inPacket[17];
-
-	x_ = (secondByte << 8) | firstByte;
-
-	firstByte = inPacket[18];
-	secondByte = inPacket[19];
-
-	y_ = (secondByte << 8) | firstByte;
-
-	firstByte = inPacket[20];
-	secondByte = inPacket[21];
-
-	theta_ = ((double)((secondByte << 8) | firstByte)) / 1000.0;
+	for (int i = 0; i < numSensors_ - 3; i++)
+	{
+		distances_[i] = inValues[i];
+	}
+	
+	x_ = inValues[8];
+	y_ = inValues[9];
+	theta_ = ((double)inValues[10]) / 1000.0;
 }
 
 // handles communication with the robot
@@ -174,6 +168,7 @@ void SerialBot::commThreadFunction()
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
 		char inPacket[inPacketSize_];
+		memset(inPacket, '\0', inPacketSize_);
 		int receiveResult = receive(inPacket);
 		if (receiveResult < 1)
 		{
@@ -185,7 +180,14 @@ void SerialBot::commThreadFunction()
 		}
 		else
 		{
-			// cout << inPacket << endl; // for testing purposes
+			//cout << inPacket << endl; // for testing purposes
+			/*
+			for (int i = 0; i < inPacketSize_; i++)
+			{
+				printf("%d ", (int)inPacket[i]);
+			}
+			cout << endl;
+			*/
 			parseSensorPacket(inPacket);
 		}
 		usleep(readPeriod_);
