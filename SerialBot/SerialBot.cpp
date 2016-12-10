@@ -2,17 +2,37 @@
 // by Andrew Kramer
 // 11/28/2016
 
-// issues commands to and receives sensor and odometry information from
-// a robot controller using UART communication
+// Class handles serial communication with differential drive robot (Colin)
+// Allows for control if the robot is running colin_controller.ino
 
-// Sends command packets with the following format:
-//   <(int)translational,(int)(angular * 1000)>
+// COMMAND PACKETS
+// Sends command packets to Colin's ATmega328 via serial
+// Command packets contain two 16 bit ints representing the 
+// commanded translational speed and angular velocity
+// The two ints should be broken into bytes, least significant byte (LSB) first
+// To avoid problems with float representations, angular velocity is 
+// expected to be multiplied by 1000 and casted to an int before sending
+// Command packet format is as follows:
+//         byte 0         |        byte 1       |       byte 2         |       byte 3
+//    translational (LSB) | translational (MSB) | angular * 1000 (LSB) | angular * 1000 (MSB)
 
-// Expects sensor packets with the following format:
-//   <(int)sonar0,(int)sonar1,...(int)sonar7,(int)x,(int)y,(int)(theta * 1000)>
+// SENSOR PACKETS
+// After sending a command, controller expects Colin to respond with 
+// a packet containing its sonar sensor readings and pose in response.
+// Sensor packets will contain numSonar + numPoseVariables 16 bit ints 
+// broken into bytes, least significant byte (LSB) first
+// Indices 0 through numSonar * 2 - 1 of the packet will contain sonar 
+// distance readings
+// Indices numSonar * 2 through numSonar * 2 + 5 will contain the robot's 
+// x position in cm, y position in cm, and heading in radians
+// To avoid problems with float representation, heading is multiplied by 
+// 1000 and casted to an int before sending
+// Sensor packet format is as follows:
+//     byte 0       |     byte 1      |    byte 2      | ... |  byte NUM_SONAR * 2   | byte NUM_SONAR * 2 + 1 | byte NUM_SONAR * 2 + 2 | byte NUM_SONAR * 2 + 3 | byte NUM_SONAR * 2 + 4 | byte NUM_SONAR * 2 + 5
+//   sonar 0 (LSB)  |  sonar 0 (MSB)  |  sonar 1 (LSB) | ... |   x position (LSB)    |    x position (MSB)    |    y position (LSB)    |    y position (MSB)    |  heading * 1000 (LSB)  |  heading * 1000 (MSB)  
 
-// ints are transmitted and received as their character representations
-// this is a definite area for improvement 
+// commThreadFunction should be run in a separate thread
+// It will send a command and receive an update 4 times per second
 
 #include "SerialBot.h"
 
@@ -25,11 +45,10 @@ SerialBot::SerialBot()
 	translational_ = 0;
 	angular_ = 0.0;
 	serialFd_ = -1;
-	inPacketSize_ = 22;
+	sensorPacketSize_ = (numSonar_ + numPoseVariables) * 2;
 	readPeriod_ = 250000;
-	numSensors_ = 11;
-	distances_ = new int16_t[numSensors_ - 3];
-	commandPacketSize_ = 4;
+	numSonar_ = 8;
+	distances_ = new int16_t[numSonar_];
 	
 	openSerial();
 }
@@ -41,7 +60,7 @@ SerialBot::~SerialBot()
 
 void SerialBot::getDistances(int *distances)
 {
-	for (int i = 0; i < numSensors_ - 3; i++)
+	for (int i = 0; i < numSonar_; i++)
 		distances[i] = distances_[i];
 }
 
@@ -85,15 +104,15 @@ int SerialBot::transmit(char* commandPacket)
 	int result = -1;
 	if (serialFd_ != -1) 
 	{
-		result = write(serialFd_, commandPacket, commandPacketSize_);
+		result = write(serialFd_, commandPacket, commandPacketSize);
 	}
 	return result;
 }
 
 // receives sensor update packet from the robot controller
-int SerialBot::receive(char* inPacket)
+int SerialBot::receive(char* sensorPacket)
 {
-	memset(inPacket, '\0', inPacketSize_);
+	memset(sensorPacket, '\0', sensorPacketSize_);
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
@@ -119,7 +138,7 @@ int SerialBot::receive(char* inPacket)
 		}
 		else
 		{
-			rxBytes = read(serialFd_, inPacket, inPacketSize_);
+			rxBytes = read(serialFd_, sensorPacket, numSonar_ + numPoseVariables);
 		}
 	}
 	return rxBytes;
@@ -136,19 +155,19 @@ void SerialBot::makeCommandPacket(char* commandPacket)
 }
 
 // parses a packet of sensor updates from the robot's controller
-int SerialBot::parseSensorPacket(char* inPacket)
+int SerialBot::parseSensorPacket(char* sensorPacket)
 {
 	int16_t firstByte;
 	int16_t secondByte;
-	int16_t inValues[numSensors_];
-	for (int i = 0; i < numSensors_; i++)
+	int16_t inValues[numSonar_ + numPoseVariables];
+	for (int i = 0; i < numSonar_ + numPoseVariables; i++)
 	{
-		firstByte = inPacket[2 * i];
-		secondByte = inPacket[(2 * i) + 1];
+		firstByte = sensorPacket[2 * i];
+		secondByte = sensorPacket[(2 * i) + 1];
 		inValues[i] = (secondByte << 8) | firstByte;
 	}
 
-	for (int i = 0; i < numSensors_ - 3; i++)
+	for (int i = 0; i < numSonar_; i++)
 	{
 		distances_[i] = inValues[i];
 	}
@@ -163,32 +182,32 @@ void SerialBot::commThreadFunction()
 {
 	while (true) 
 	{
-		char commandPacket[commandPacketSize_];
+		char commandPacket[commandPacketSize];
 		makeCommandPacket(commandPacket);
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
-		char inPacket[inPacketSize_];
-		memset(inPacket, '\0', inPacketSize_);
-		int receiveResult = receive(inPacket);
+		char sensorPacket[sensorPacketSize_];
+		memset(sensorPacket, '\0', sensorPacketSize_);
+		int receiveResult = receive(sensorPacket);
 		if (receiveResult < 1)
 		{
 			cerr << "sensor packet not received" << endl;
 		}
-		else if (receiveResult < commandPacketSize_)
+		else if (receiveResult < commandPacketSize)
 		{
 			cerr << "incomplete sensor packet received" << endl;
 		}
 		else
 		{
-			//cout << inPacket << endl; // for testing purposes
+			//cout << sensorPacket << endl; // for testing purposes
 			/*
-			for (int i = 0; i < inPacketSize_; i++)
+			for (int i = 0; i < sensorPacketSize_; i++)
 			{
-				printf("%d ", (int)inPacket[i]);
+				printf("%d ", (int)sensorPacket[i]);
 			}
 			cout << endl;
 			*/
-			parseSensorPacket(inPacket);
+			parseSensorPacket(sensorPacket);
 		}
 		usleep(readPeriod_);
 	}
