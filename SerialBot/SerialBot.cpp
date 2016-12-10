@@ -155,6 +155,7 @@ void SerialBot::makeCommandPacket(char* commandPacket)
 }
 
 // parses a packet of sensor updates from the robot's controller
+// updates distance array and pose
 int SerialBot::parseSensorPacket(char* sensorPacket)
 {
 	int16_t firstByte;
@@ -178,6 +179,7 @@ int SerialBot::parseSensorPacket(char* sensorPacket)
 }
 
 // handles communication with the robot
+// needs to be run in a separate thread
 void SerialBot::commThreadFunction()
 {
 	while (true) 
