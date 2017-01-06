@@ -33,7 +33,7 @@ void openSerial()
 	}
 
 	struct termios options;
-	tcgetattr(serial, &options);
+	tcgetattr(serialFD, &options);
 	options.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
@@ -59,7 +59,7 @@ void makeCommandPacket(char* commandPacket, int16_t speed, int16_t time,
 	commandPacket[1] = (char)((speed >> 8) & 0xFF);
 	int16_t intAngular = (int16_t)(angular * 10000.0);
 	commandPacket[2] = (char)(intAngular & 0xFF);
-	commandPackit[3] = (char)((intAngular >> 8) & 0xFF);
+	commandPacket[3] = (char)((intAngular >> 8) & 0xFF);
 	commandPacket[4] = (char)(time & 0xFF);
 	commandPacket[5] = (char)((time >> 8) & 0xFF);
 	int16_t intKP = (int16_t)(kP * 10000.0);
@@ -132,7 +132,7 @@ int main()
 		char commandPacket[commandPacketLength];
 		makeCommandPacket(commandPacket, speed, time, angular, kP, kI, kD);
 		transmit(commandPacket);
-		int ack = recieve();
+		int ack = receive();
 		if (ack == 1) cerr << "Command acknowledged" << endl;
 		else if (ack == 0) cerr << "timeout occurred on receive" << endl;
 		else if (ack == -1) cerr << "select attempt failed" << endl;
