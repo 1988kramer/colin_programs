@@ -53,7 +53,7 @@ int transmit(char* commandPacket)
 }
 
 void makeCommandPacket(char* commandPacket, int16_t speed, int16_t time, 
-																		double angular, double kP, double kI, double kD)
+						double angular, double kP, double kI, double kD)
 {
 	commandPacket[0] = (char)(speed & 0xFF);
 	commandPacket[1] = (char)((speed >> 8) & 0xFF);
@@ -104,7 +104,7 @@ int receive()
 }
 
 void getUserParams(int16_t& speed, int16_t& time, double& angular,
-																	double& kP, double& kI, double& kD)
+				   double& kP, double& kI, double& kD)
 {
 	cout << "Enter speed in cm/s: ";
 	cin >> speed;
