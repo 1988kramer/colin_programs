@@ -34,8 +34,6 @@ LineFitter::LineFitter(Point* points, int numPoints)
 	for (int i = 0; i < numPoints_; i++)
 		B_[i] = new double[1];
 	points_ = new Point[numPoints_];
-	for (int i = 0; i < numPoints_; i++)
-		points_[i] = new Point();
 	setPoints(points);
 }
 
@@ -58,7 +56,7 @@ void LineFitter::findCoefficients()
 	double** At_W = find_At_W();
 	double** At_W_A = multiplyMatrices(At_W, 2, numPoints_, A_, numPoints_, 2);
 	double** inv_At_W_A = find2by2inverse(At_W_A);
-	double** At_W_B = multiplyMatrices(At_W, 2, numPoints, B_, numPoints_, 1);
+	double** At_W_B = multiplyMatrices(At_W, 2, numPoints_, B_, numPoints_, 1);
 	double** x = multiplyatrices(inv_At_W_A, 2, 2, At_W_B, 2, 1);
 	m_ = x[1][0];
 	b_ = x[0][0];

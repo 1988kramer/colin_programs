@@ -1,6 +1,8 @@
 #ifndef LINEFITTER_H
 #define LINEFITTER_H
 
+#include "Point.h"
+
 class LineFitter
 {
 public:
