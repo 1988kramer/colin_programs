@@ -7,7 +7,9 @@
 // on obstacle locations in Colin's local coordinate system measured with 
 // sonar sensors
 
-#include "SerialBot.h"
+#include "SerialBot/SerialBot.h"
+#include "LineFitter/LineFitter.h"
+#include "LineFitter/Point.h"
 #include <pthread.h>
 #include <math.h>
 
