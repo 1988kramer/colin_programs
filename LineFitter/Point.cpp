@@ -1,3 +1,5 @@
+#include"Point.h"
+
 Point::Point(double range, double heading)
 {
 	setCoordinates(range, heading);
