@@ -57,7 +57,7 @@ void LineFitter::findCoefficients()
 	double** At_W_A = multiplyMatrices(At_W, 2, numPoints_, A_, numPoints_, 2);
 	double** inv_At_W_A = find2by2inverse(At_W_A);
 	double** At_W_B = multiplyMatrices(At_W, 2, numPoints_, B_, numPoints_, 1);
-	double** x = multiplyatrices(inv_At_W_A, 2, 2, At_W_B, 2, 1);
+	double** x = multiplyMatrices(inv_At_W_A, 2, 2, At_W_B, 2, 1);
 	m_ = x[1][0];
 	b_ = x[0][0];
 	// delete matrices
@@ -66,7 +66,7 @@ void LineFitter::findCoefficients()
 		delete[] At_W[i];
 		delete[] inv_At_W_A[i];
 		delete[] x[i];
-		delete[] At_W_B[i]
+		delete[] At_W_B[i];
 	}
 	delete[] At_W;
 	delete[] inv_At_W_A;
@@ -100,13 +100,13 @@ void LineFitter::buildAMatrix()
 void LineFitter::buildBMatrix()
 {
 	for (int i = 0; i < numPoints_; i++)
-		B[i][0] = points_[i].getY();
+		B_[i][0] = points_[i].getY();
 }
 
 void LineFitter::buildWMatrix()
 {
 	for (int i = 0; i < numPoints_; i++)
-		W[i][i] = exp(-1.0 * pow(points_[i].getRange(), 2.0) / 12500.0));
+		W_[i][i] = exp(-1.0 * pow(points_[i].getRange(), 2.0) / 12500.0);
 }
 
 double** LineFitter::find2by2inverse(double** matrix)
@@ -115,7 +115,9 @@ double** LineFitter::find2by2inverse(double** matrix)
 	double determinant = matrix[0][0] * matrix[1][1];
 	determinant -= matrix[1][0] * matrix[0][1];
 	// calculate inverse of the matrix
-	double matrixInv[2][2];
+	double** matrixInv = new double*[2];
+	for (int i = 0; i < 2; i++)
+		matrixInv[i] = new double[2];
 	matrixInv[0][0] = matrix[1][1];
 	matrixInv[1][1] = matrix[0][0];
 	matrixInv[0][1] = -matrix[0][1];
@@ -123,7 +125,7 @@ double** LineFitter::find2by2inverse(double** matrix)
 	for (int i = 0; i < 2; i++)
 	{
 		for (int j = 0; j < 2; j++)
-			matrixInv /= determinant;
+			matrixInv[i][j] /= determinant;
 	}
 	return matrixInv;
 }
