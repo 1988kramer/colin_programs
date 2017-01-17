@@ -34,9 +34,8 @@ int main()
 	double slope = line.getM();
 	double intercept = line.getB();
 	printf("y = %.4f x + %.2f\n", slope, intercept);
-	// segfaults here for some reason
+	printf("press any key to exit: ");
 	fflush(stdout);
-	cout << "press any key to exit: ";
 	getchar();
 	return 1;
 }
