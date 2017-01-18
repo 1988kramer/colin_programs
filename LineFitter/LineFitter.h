@@ -2,6 +2,10 @@
 #define LINEFITTER_H
 
 #include "Point.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+using namespace std;
 
 class LineFitter
 {
@@ -29,6 +33,7 @@ private:
 						 	  double** B, int bRows, int bColumns);
 	double** find_At_W();
 	double** find2by2inverse(double** matrix);
+	void printMatrix(double** matrix, int rows, int columns);
 };
 
 #endif

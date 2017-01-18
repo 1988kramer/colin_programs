@@ -39,6 +39,7 @@ LineFitter::LineFitter(Point* points, int numPoints)
 
 LineFitter::~LineFitter()
 {
+	printf("deleting line fitter");
 	for (int i = 0; i < numPoints_; i++)
 	{
 		delete[] W_[i];

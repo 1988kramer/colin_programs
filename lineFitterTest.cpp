@@ -1,7 +1,5 @@
 // program to test the line fitting class
 
-#include <iostream>
-#include <fstream>
 #include <stdlib.h>
 #include "LineFitter/LineFitter.h"
 
@@ -11,17 +9,17 @@ const int numSensors = 8;
 
 void readPoints(Point* points)
 {
-	ifstream file;
-	file.open("sonar.txt");
+	FILE* file;
+	file = fopen("sonar.txt", "r");
 	int range;
-	double heading;
+	float heading;
 	for (int i = 0; i < numSensors; i++)
 	{
-		file >> range;
-		file >> heading;
-		points[i].setCoordinates(range, heading);
+		fscanf(file, "%d", &range);
+		fscanf(file, "%f", &heading);
+		points[i].setCoordinates(range, (double)heading);
 	}
-	file.close();
+	fclose(file);
 }
 
 int main()
@@ -36,6 +34,7 @@ int main()
 	printf("y = %.4f x + %.2f\n", slope, intercept);
 	printf("press any key to exit: ");
 	fflush(stdout);
+	printf("after fflush\n");
 	getchar();
 	return 1;
 }
