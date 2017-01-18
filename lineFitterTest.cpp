@@ -32,9 +32,6 @@ int main()
 	double slope = line.getM();
 	double intercept = line.getB();
 	printf("y = %.4f x + %.2f\n", slope, intercept);
-	printf("press any key to exit: ");
 	fflush(stdout);
-	printf("after fflush\n");
-	getchar();
 	return 1;
 }
