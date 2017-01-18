@@ -1,6 +1,7 @@
 // program to test the line fitting class
 
-#include <stdlib.h>
+//#include <stdlib.h>
+#include <stdio.h>
 #include "LineFitter/LineFitter.h"
 
 using namespace std;
@@ -31,7 +32,8 @@ int main()
 	line.updateLine();
 	double slope = line.getM();
 	double intercept = line.getB();
+	printf("line equation: \n");
 	printf("y = %.4f x + %.2f\n", slope, intercept);
 	fflush(stdout);
-	return 1;
+	return 0;
 }

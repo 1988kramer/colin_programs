@@ -55,28 +55,28 @@ void LineFitter::findCoefficients()
 {
 	double** At_W = find_At_W();
 
-	printf("\nAt_W built \n");
-	printMatrix(At_W, 2, numPoints_);
+	//printf("\nAt_W built \n");
+	//printMatrix(At_W, 2, numPoints_);
 
 	double** At_W_A = multiplyMatrices(At_W, 2, numPoints_, A_, numPoints_, 2);
 
-	printf("\nAt_W_A built \n");
-	printMatrix(At_W_A, 2, 2);
+	//printf("\nAt_W_A built \n");
+	//printMatrix(At_W_A, 2, 2);
 
 	double** inv_At_W_A = find2by2inverse(At_W_A);
 
-	printf("\ninv_At_W_A built \n");
-	printMatrix(inv_At_W_A, 2, 2);
+	//printf("\ninv_At_W_A built \n");
+	//printMatrix(inv_At_W_A, 2, 2);
 
 	double** At_W_B = multiplyMatrices(At_W, 2, numPoints_, B_, numPoints_, 1);
 
-	printf("\nAt_W_B built \n");
-	printMatrix(At_W_B, 2, 1);
+	//printf("\nAt_W_B built \n");
+	//printMatrix(At_W_B, 2, 1);
 	
 	double** x = multiplyMatrices(inv_At_W_A, 2, 2, At_W_B, 2, 1);
 
-	printf("\nx matrix built \n");
-	printMatrix(x, 2, 1);
+	//printf("\nx matrix built \n");
+	//printMatrix(x, 2, 1);
 
 	m_ = x[1][0];
 	b_ = x[0][0];
@@ -93,7 +93,6 @@ void LineFitter::findCoefficients()
 	delete[] inv_At_W_A;
 	delete[] x;
 	delete[] At_W_B;
-	delete[] At_W;
 }
 
 double LineFitter::getM()
@@ -114,29 +113,30 @@ void LineFitter::buildAMatrix()
 		A_[i][0] = 1.0;
 		A_[i][1] = points_[i].getX();
 	}
-	printf("A matrix built \n");
-	printMatrix(A_, numPoints_, 2);
-	printf("\n");
+	//printf("A matrix built \n");
+	//printMatrix(A_, numPoints_, 2);
+	//printf("\n");
 }
 
 void LineFitter::buildBMatrix()
 {
 	for (int i = 0; i < numPoints_; i++)
 		B_[i][0] = points_[i].getY();
-	printf("B matrix built \n");
-	printMatrix(B_, numPoints_, 1);
-	printf("\n");
+	//printf("B matrix built \n");
+	//printMatrix(B_, numPoints_, 1);
+	//printf("\n");
 }
 
 void LineFitter::buildWMatrix()
 {
 	for (int i = 0; i < numPoints_; i++)
 		W_[i][i] = exp(-1.0 * pow(points_[i].getRange(), 2.0) / 12500.0);
-	printf("W matrix built \n");
-	printMatrix(W_, numPoints_, numPoints_);
-	printf("\n");
+	//printf("W matrix built \n");
+	//printMatrix(W_, numPoints_, numPoints_);
+	//printf("\n");
 }
 
+/*
 void LineFitter::printMatrix(double** matrix, int rows, int columns)
 {
 	for (int i = 0; i < rows; i++)
@@ -144,11 +144,11 @@ void LineFitter::printMatrix(double** matrix, int rows, int columns)
 		for (int j = 0; j < columns; j++)
 		{
 			printf("%.2f ", matrix[i][j]);
-			fflush(stdout);
 		}
 		printf("\n");
 	}
 }
+*/
 
 double** LineFitter::find2by2inverse(double** matrix)
 {
