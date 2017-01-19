@@ -7,6 +7,10 @@
 // on obstacle locations in Colin's local coordinate system measured with 
 // sonar sensors
 
+// local coordinate system is defined as follows:
+//    x axis: forward-aft with forward positive
+//    y axis: left-right with left positive
+
 #include "SerialBot/SerialBot.h"
 #include "LineFitter/LineFitter.h"
 #include "LineFitter/Point.h"
@@ -43,19 +47,39 @@ void updatePoints()
 		points[i].setCoordinates(distances[i], sensorAngles[i]);
 }
 
-// accepts two doubles as parameters
-//  the slope of the line
-//  the y intercept of the line
-// returns the minimum distance between the robot's location (the origin)
-// and the given line
-double distanceToLine(double slope, double intercept)
+// accepts two doubles as parameters:
+//    the slope of the line representing the wall
+//    the y intercept of the line representing the wall
+// returns the error between the distance between the robot's location (the origin)
+// and the given line and the set point
+// positive error indicates the robot is between the set point and the wall
+// negative error indicates the set point is between the robot and the wall
+double getDistanceToSetPoint(double slope, double intercept)
 {
 	if (slope == 0.0) // if the line is perfectly horizontal
-		return abs(intercept);
+		return abs(intercept) - error;
 	double xIntercept = intercept / (-(1.0 / slope) - slope);
 	double yIntercept = intercept / (1.0 + pow(slope, 2.0));
 	double distance = sqrt(pow(xIntercept, 2.0) + pow(yIntercept, 2.0));
-	return distance;
+	double error = setPoint - distance;
+	return error;
+}
+
+// accepts one double as a parameter:
+//    the slope of the line representing the wall
+// returns velocity of the set point in the robot's local coordinate system
+// velocity is positive if the set point is moving to the left
+// velocity is negative if set point is moving to the right
+double getVelocityOfSetPoint(double slope) 
+{
+	if (slope == 0.0)
+		return 0.0;
+	// calculate speedToSetPoint
+	double speedToSetPoint = sqrt(pow((double)translational, 2) / (pow(slope, 2) + 1));
+	if (slope > 0.0)
+		return speedToSetPoint
+	else
+		return speedToSetPoint * -1.0;	
 }
 
 void* wallFollowFunction(void* args)
@@ -70,11 +94,10 @@ void* wallFollowFunction(void* args)
 			line.updateLine();
 			double slope = line.getM();
 			double intercept = line.getB();
-			double distance = distanceToLine(slope, intercept);
-			double error = distance - setPoint;
+			double error = getDistanceToSetPoint(slope, intercept);
+			double dError = getVelocityOfSetPoint(slope);
 			double eTerm = kE * error;
-			double sTerm = kS * slope * (double)translational;
-			if (intercept < 0.0) eTerm *= -1; // flip sign of eTerm if wall is on Colin's right
+			double sTerm = kS * dError;
 			angular = eTerm + sTerm;
 			if (angular > maxAng)
 			{
