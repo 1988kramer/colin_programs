@@ -127,10 +127,11 @@ void LineFitter::buildBMatrix()
 	//printf("\n");
 }
 
+// weight decays to 0 by range = 200
 void LineFitter::buildWMatrix()
 {
 	for (int i = 0; i < numPoints_; i++)
-		W_[i][i] = exp(-1.0 * pow(points_[i].getRange(), 2.0) / 12500.0);
+		W_[i][i] = exp(-1.0 * pow(points_[i].getRange(), 2.0) / 7500.0);
 	//printf("W matrix built \n");
 	//printMatrix(W_, numPoints_, numPoints_);
 	//printf("\n");
