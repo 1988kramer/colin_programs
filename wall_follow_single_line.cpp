@@ -82,6 +82,24 @@ double getVelocityOfSetPoint(double slope)
 		return speedToSetPoint * -1.0;	
 }
 
+// sets colin's speed set points
+// limits the angular and translational velocities to the max angular velocity
+// but preserves the commanded radius of travel
+void setSpeed()
+{
+	if (angular > maxAng)
+	{
+		double radius = (double)translational / abs(angular);
+		int adjustedTrans = radius * angMax;
+		double adjustedAng = (angular > 0.0)? angMax : angMax * -1.0;
+		colin.setSpeed(adjustedTrans, adjustedAng);
+	}
+	else
+	{
+		colin.setSpeed(translational, angular);	
+	}
+}
+
 void* wallFollowFunction(void* args)
 {
 	while(true)
@@ -99,15 +117,7 @@ void* wallFollowFunction(void* args)
 			double eTerm = kE * error;
 			double sTerm = kS * dError;
 			angular = eTerm + sTerm;
-			if (angular > maxAng)
-			{
-				// need to do something or other here
-			}
-			if (angular < maxAng * -1.0)
-			{
-				// also need to do something here
-			}
-			colin.setSpeed(translational, angular);
+			setSpeed();
 		}
 		usleep(500000); // repeat every 0.5 seconds
 	}
@@ -122,10 +132,17 @@ int main()
 	while (true)
 	{
 		cout << "Enter translational speed: ";
-		cin >> translational;
+		int newTrans;
+		cin >> newTrans;
 		cout << endl;
-		if (translational > maxTrans) translational = maxTrans;
-		if (translational < -1 * maxTrans) translational = -1 * maxTrans;
+		if (abs(newTrans) > maxTrans)
+		{
+			translational = (newTrans > 0)? maxTrans : maxTrans * -1;
+		}
+		else
+		{
+			translational = newTrans;
+		}
 	}
 	return 1;
 }
