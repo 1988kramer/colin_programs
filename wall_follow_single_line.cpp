@@ -29,7 +29,7 @@ const double sensorAngles[] = {0.0, 7.0*pi/4.0, 3.0*pi/2.0, 5.0*pi/4.0, pi, 3.0*
 int distances[numSonar];
 Point points[numSonar];
 LineFitter line(points, numSonar);
-double setPoint = 10; // initial set point for following distance
+double setPoint = 30; // initial set point for following distance
 double kE = 0.2; // gain for error in following distance
 double kS = 0.01; // gain for slope of wall relative to Colin's path
 
