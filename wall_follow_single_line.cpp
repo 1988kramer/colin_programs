@@ -57,7 +57,7 @@ void updatePoints()
 double getDistanceToSetPoint(double slope, double intercept)
 {
 	if (slope == 0.0) // if the line is perfectly horizontal
-		return abs(intercept) - error;
+		return abs(intercept) - setPoint;
 	double xIntercept = intercept / (-(1.0 / slope) - slope);
 	double yIntercept = intercept / (1.0 + pow(slope, 2.0));
 	double distance = sqrt(pow(xIntercept, 2.0) + pow(yIntercept, 2.0));
@@ -77,7 +77,7 @@ double getVelocityOfSetPoint(double slope)
 	// calculate speedToSetPoint
 	double speedToSetPoint = sqrt(pow((double)translational, 2) / (pow(slope, 2) + 1));
 	if (slope > 0.0)
-		return speedToSetPoint
+		return speedToSetPoint;
 	else
 		return speedToSetPoint * -1.0;	
 }
@@ -90,8 +90,8 @@ void setSpeed()
 	if (angular > maxAng)
 	{
 		double radius = (double)translational / abs(angular);
-		int adjustedTrans = radius * angMax;
-		double adjustedAng = (angular > 0.0)? angMax : angMax * -1.0;
+		int adjustedTrans = radius * maxAng;
+		double adjustedAng = (angular > 0.0)? maxAng : maxAng * -1.0;
 		colin.setSpeed(adjustedTrans, adjustedAng);
 	}
 	else
