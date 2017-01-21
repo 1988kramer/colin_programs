@@ -30,8 +30,8 @@ int distances[numSonar];
 Point points[numSonar];
 LineFitter line(points, numSonar);
 double setPoint = 30; // initial set point for following distance
-double kE = 0.2; // gain for error in following distance
-double kS = 0.01; // gain for slope of wall relative to Colin's path
+double kE = 0.05; // gain for error in following distance
+double kS = 0.0; // gain for slope of wall relative to Colin's path
 
 int translational = 0;
 double angular = 0.0;
@@ -61,7 +61,7 @@ double getDistanceToSetPoint(double slope, double intercept)
 	double xIntercept = intercept / (-(1.0 / slope) - slope);
 	double yIntercept = intercept / (1.0 + pow(slope, 2.0));
 	double distance = sqrt(pow(xIntercept, 2.0) + pow(yIntercept, 2.0));
-	double error = setPoint - distance;
+	double error = distance - setPoint;
 	return error;
 }
 
