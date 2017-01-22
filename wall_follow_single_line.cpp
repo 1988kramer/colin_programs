@@ -58,8 +58,8 @@ double getDistanceToSetPoint(double slope, double intercept)
 {
 	if (slope == 0.0) // if the line is perfectly horizontal
 		return abs(intercept) - setPoint;
-	double xIntercept = intercept / (-(1.0 / slope) - slope);
-	double yIntercept = intercept / (1.0 + pow(slope, 2.0));
+	double xIntercept = (-1.0 * intercept) / ((1.0 / slope) + slope);
+	double yIntercept = (slope * xIntercept) + intercept;
 	double distance = sqrt(pow(xIntercept, 2.0) + pow(yIntercept, 2.0));
 	double error = distance - setPoint;
 	if (intercept < 0)
@@ -89,7 +89,7 @@ double getVelocityOfSetPoint(double slope)
 // but preserves the commanded radius of travel
 void setSpeed()
 {
-	if (angular > maxAng)
+	if (abs(angular) > maxAng)
 	{
 		double radius = (double)translational / abs(angular);
 		int adjustedTrans = radius * maxAng;
