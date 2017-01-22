@@ -31,7 +31,7 @@ Point points[numSonar];
 LineFitter line(points, numSonar);
 double setPoint = 30; // initial set point for following distance
 double kE = 0.01; // gain for error in following distance
-double kS = 0.0; // gain for slope of wall relative to Colin's path
+double kS = 0.05; // gain for slope of wall relative to Colin's path
 
 int translational = 0;
 double angular = 0.0;
@@ -77,11 +77,13 @@ double getVelocityOfSetPoint(double slope)
 	if (slope == 0.0)
 		return 0.0;
 	// calculate speedToSetPoint
-	double speedToSetPoint = sqrt(pow((double)translational, 2) / (pow(slope, 2) + 1));
-	if (slope > 0.0)
-		return speedToSetPoint;
-	else
-		return speedToSetPoint * -1.0;	
+	double angleOfLine = atan(slope);
+	double speedToSetPoint = (double)translational * sin(angleOfLine);
+	// alternate method, doesn't use trig functions:
+	//double speedToSetPoint = sqrt((pow((double)translational, 2) * pow(slope, 2))/(1 + pow(slope, 2)));
+	if (slope < 0.0)
+		speedToSetPoint *= -1.0;
+	return speedToSetPoint;
 }
 
 // sets colin's speed set points
@@ -106,7 +108,7 @@ void* wallFollowFunction(void* args)
 {
 	while(true)
 	{
-		if (translational > 0)
+		if (translational != 0)
 		{
 			colin.getDistances(distances);
 			updatePoints();
@@ -119,8 +121,12 @@ void* wallFollowFunction(void* args)
 			double eTerm = kE * error;
 			double sTerm = kS * dError;
 			angular = eTerm + sTerm;
-			setSpeed();
 		}
+		else
+		{
+			angular = 0.0;
+		}
+		setSpeed();
 		usleep(500000); // repeat every 0.5 seconds
 	}
 }
