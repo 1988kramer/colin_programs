@@ -62,6 +62,8 @@ double getDistanceToSetPoint(double slope, double intercept)
 	double yIntercept = intercept / (1.0 + pow(slope, 2.0));
 	double distance = sqrt(pow(xIntercept, 2.0) + pow(yIntercept, 2.0));
 	double error = distance - setPoint;
+	if (intercept < 0)
+		error *= -1;
 	return error;
 }
 
