@@ -46,6 +46,7 @@
 #include <string>
 #include <string.h>
 #include <pthread.h>
+#include <wiringPi.h>
 
 using namespace std;
 
