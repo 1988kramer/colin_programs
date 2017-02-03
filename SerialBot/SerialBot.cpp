@@ -95,8 +95,9 @@ void SerialBot::openSerial()
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
-	tcflush(serialFd_, TCIOFLUSH);
 	tcsetattr(serialFd_, TCSANOW, &options);
+	usleep(250000);
+	tcflush(serialFd_, TCIOFLUSH);
 }
 
 void SerialBot::resetController()
