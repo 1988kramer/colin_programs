@@ -45,9 +45,9 @@ SerialBot::SerialBot()
 	translational_ = 0;
 	angular_ = 0.0;
 	serialFd_ = -1;
-	sensorPacketSize_ = (numSonar_ + numPoseVariables) * 2;
 	readPeriod_ = 250000;
 	numSonar_ = 8;
+	sensorPacketSize_ = (numSonar_ + numPoseVariables) * 2;
 	distances_ = new int16_t[numSonar_];
 	
 	resetController();
@@ -95,6 +95,8 @@ void SerialBot::openSerial()
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
+	options.c_cc[VMIN] = sensorPacketSize_; // read blocks until all bytes are received
+	options.c_cc[VTIME] = 0;
 	tcsetattr(serialFd_, TCSANOW, &options);
 	usleep(250000);
 	tcflush(serialFd_, TCIOFLUSH);
@@ -128,30 +130,7 @@ int SerialBot::receive(char* sensorPacket)
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
-		// set up blocking read with timeout at .25 seconds
-		fd_set set;
-		FD_ZERO(&set); // clear the file descriptor set
-		FD_SET(serialFd_, &set); // add serial file descriptor to the set
-		struct timeval timeout;
-		timeout.tv_sec = 0;
-		timeout.tv_usec = 25000;
-		
-		// wait for serial to become available
-		int selectResult = select(serialFd_ + 1, &set, NULL, NULL, &timeout);
-		if (selectResult < 0)
-		{
-			cerr << "blocking read failed" << endl;
-			return -1;
-		}
-		else if (selectResult == 0)
-		{
-			cerr << "read failed: timeout occurred" << endl;
-			return 0;
-		}
-		else
-		{
-			rxBytes = read(serialFd_, sensorPacket, numSonar_ + numPoseVariables);
-		}
+		rxBytes = read(serialFd_, sensorPacket, sensorPacketSize:);
 	}
 	return rxBytes;
 }
