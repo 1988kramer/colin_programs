@@ -180,13 +180,12 @@ void SerialBot::commThreadFunction()
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
 		char sensorPacket[sensorPacketSize_];
-		memset(sensorPacket, '\0', sensorPacketSize_);
 		int receiveResult = receive(sensorPacket);
 		if (receiveResult < 1)
 		{
 			cerr << "sensor packet not received" << endl;
 		}
-		else if (receiveResult < commandPacketSize)
+		else if (receiveResult < sensorPacketSize_)
 		{
 			cerr << "incomplete sensor packet received" << endl;
 		}
