@@ -51,6 +51,7 @@ SerialBot::SerialBot()
 	distances_ = new int16_t[numSonar_];
 	
 	openSerial();
+	resetController();
 }
 
 SerialBot::~SerialBot()
@@ -96,6 +97,15 @@ void SerialBot::openSerial()
 	options.c_lflag = 0;
 	tcflush(serialFd_, TCIFLUSH);
 	tcsetattr(serialFd_, TCSANOW, &options);
+}
+
+void SerialBot::resetController()
+{
+	pinMode(4, OUTPUT);
+	digitalWrite(4, LOW);
+	delay(100);
+	digitalWrite(4, HIGH);
+	delay(1000);
 }
 
 // transmits command packet to the robot controller
