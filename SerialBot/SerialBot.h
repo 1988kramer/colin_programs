@@ -75,6 +75,7 @@ private:
 	int commandPacketSize_;
 	
 	void openSerial(); // opens serial connection with robot controller
+	void resetController(); // resets the robot controller using gpio
 	int transmit(char* commandPacket); // transmits command packet to robot 
 	                                   //controller
 	int receive(char* sensorPacket); // receives sensor update packet
