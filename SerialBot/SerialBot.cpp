@@ -50,8 +50,8 @@ SerialBot::SerialBot()
 	numSonar_ = 8;
 	distances_ = new int16_t[numSonar_];
 	
-	openSerial();
 	resetController();
+	openSerial();
 }
 
 SerialBot::~SerialBot()
@@ -101,6 +101,7 @@ void SerialBot::openSerial()
 
 void SerialBot::resetController()
 {
+	wiringPiSetupGpio();
 	pinMode(4, OUTPUT);
 	digitalWrite(4, LOW);
 	delay(50);
