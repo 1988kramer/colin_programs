@@ -45,9 +45,9 @@ SerialBot::SerialBot()
 	translational_ = 0;
 	angular_ = 0.0;
 	serialFd_ = -1;
-	sensorPacketSize_ = (numSonar_ + numPoseVariables) * 2;
 	readPeriod_ = 250000;
 	numSonar_ = 8;
+	sensorPacketSize_ = (numSonar_ + numPoseVariables) * 2;
 	distances_ = new int16_t[numSonar_];
 	
 	resetController();
@@ -150,7 +150,7 @@ int SerialBot::receive(char* sensorPacket)
 		}
 		else
 		{
-			rxBytes = read(serialFd_, sensorPacket, numSonar_ + numPoseVariables);
+			rxBytes = read(serialFd_, sensorPacket, sensorPacketSize_);
 		}
 	}
 	return rxBytes;
@@ -201,13 +201,12 @@ void SerialBot::commThreadFunction()
 		if (transmit(commandPacket) < 1)
 			cerr << "command packet transmission failed" << endl;
 		char sensorPacket[sensorPacketSize_];
-		memset(sensorPacket, '\0', sensorPacketSize_);
 		int receiveResult = receive(sensorPacket);
 		if (receiveResult < 1)
 		{
 			cerr << "sensor packet not received" << endl;
 		}
-		else if (receiveResult < commandPacketSize)
+		else if (receiveResult < sensorPacketSize_)
 		{
 			cerr << "incomplete sensor packet received" << endl;
 		}
