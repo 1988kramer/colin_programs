@@ -30,8 +30,8 @@ int distances[numSonar];
 Point points[numSonar];
 LineFitter line(points, numSonar);
 double setPoint = 30; // initial set point for following distance
-double kE = 0.01; // gain for error in following distance
-double kS = 0.05; // gain for slope of wall relative to Colin's path
+double kE = 0.0; // gain for error in following distance
+double kS = 0.1; // gain for slope of wall relative to Colin's path
 
 int translational = 0;
 double angular = 0.0;
@@ -116,6 +116,7 @@ void* wallFollowFunction(void* args)
 			line.updateLine();
 			double slope = line.getM();
 			double intercept = line.getB();
+			printf("y=%.2fx + %.2f\n", slope, intercept);
 			double error = getDistanceToSetPoint(slope, intercept);
 			double dError = getVelocityOfSetPoint(slope);
 			double eTerm = kE * error;
