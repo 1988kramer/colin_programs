@@ -107,7 +107,7 @@ void SerialBot::resetController()
 	digitalWrite(4, LOW);
 	delay(50);
 	digitalWrite(4, HIGH);
-	delay(5000);
+	delay(8000);
 }
 
 // transmits command packet to the robot controller
