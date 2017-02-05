@@ -109,7 +109,7 @@ void SerialBot::resetController()
 	digitalWrite(4, LOW);
 	delay(50);
 	digitalWrite(4, HIGH);
-	delay(5000);
+	delay(10000);
 }
 
 // transmits command packet to the robot controller
@@ -130,7 +130,12 @@ int SerialBot::receive(char* sensorPacket)
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
+<<<<<<< HEAD
 		rxBytes = read(serialFd_, sensorPacket, sensorPacketSize:);
+=======
+		// set up blocking read with timeout at .25 seconds
+		fd_set set;
+		FD_ZERO(&set); // clear the file descriptor set
 	}
 	return rxBytes;
 }
