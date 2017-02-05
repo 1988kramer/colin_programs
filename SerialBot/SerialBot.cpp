@@ -130,12 +130,7 @@ int SerialBot::receive(char* sensorPacket)
 	int rxBytes;
 	if (serialFd_ != -1)
 	{
-<<<<<<< HEAD
-		rxBytes = read(serialFd_, sensorPacket, sensorPacketSize:);
-=======
-		// set up blocking read with timeout at .25 seconds
-		fd_set set;
-		FD_ZERO(&set); // clear the file descriptor set
+		rxBytes = read(serialFd_, sensorPacket, sensorPacketSize_);
 	}
 	return rxBytes;
 }
