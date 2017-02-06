@@ -21,11 +21,11 @@ using namespace std;
 
 SerialBot colin;
 
-const double pi = 3.14159265;
 const int numSonar = 8;
 const int maxTrans = 200; // max translational speed
 const double maxAng = 2.0; // max angular velocity
-const double sensorAngles[] = {0.0, 7.0*pi/4.0, 3.0*pi/2.0, 5.0*pi/4.0, pi, 3.0*pi/4.0, pi/2.0, pi/4.0};
+// angles of sensors in radians: 0, 7pi/4, 3pi/2, 5pi/4, pi, 3pi/4, pi/2, pi/4
+const double sensorAngles[] = {0.0, 5.497787, 4.712389, 3.926991, 3.141593, 2.356194, 1.570796, 0.785398};
 int distances[numSonar];
 Point points[numSonar];
 LineFitter line(points, numSonar);
